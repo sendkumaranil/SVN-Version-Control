@@ -1,0 +1,130 @@
+SVN Commands
+********************************************************************************************
+Take checkout code from svn repository server
+<url> svn repository server url
+---------------------------------------------------------------------
+> svn co <url>. 
+---------------------------------------------------------------------
+Take Update from svn repository server
+---------------------------------------------------------------------
+> svn up
+---------------------------------------------------------------------
+Check differences between local copy and svn repository copy
+> svn diff
+---------------------------------------------------------------------
+Step 1: View Conflicts (override same line with working copy and commited copy)
+
+]$ svn up
+Conflict discovered in 'README'.
+Select: (p) postpone, (df) diff-full, (e) edit,
+        (mc) mine-conflict, (tc) theirs-conflict,
+        (s) show all options:
+Subversion is complaining that there is a conflict with the README file, and Subversion does not know how to solve this. So choose the df option to review the conflict.
+
+]$ svn up
+Conflict discovered in 'README'.
+Select: (p) postpone, (df) diff-full, (e) edit,
+        (mc) mine-conflict, (tc) theirs-conflict,
+        (s) show all options: df
+--- .svn/text-base/README.svn-base	Sat Aug 24 18:07:13 2013
++++ .svn/tmp/README.tmp	Sat Aug 24 18:13:03 2013
+@@ -1 +1,11 @@
+-/* TODO: Add contents in README file */
++<<<<<<< .mine
++* File list
++
++1) array.c	Implementation of array operation.
++2) README	Instructions for user.
++=======
++* Supported operations:
++
++1) Accept input
++2) Display array elements
++>>>>>>> .r7
+Select: (p) postpone, (df) diff-full, (e) edit, (r) resolved,
+        (mc) mine-conflict, (tc) theirs-conflict,
+        (s) show all options:
+
+Step 2: Postpone Conflicts
+Next Jerry chooses the postpone(p) options, so that he can resolve the conflict.
+
+Select: (p) postpone, (df) diff-full, (e) edit, (r) resolved,
+        (mc) mine-conflict, (tc) theirs-conflict,
+        (s) show all options: p
+C    README
+Updated to revision 7.
+Summary of conflicts:
+  Text conflicts: 1
+After opening the README in text editor he realizes that Subversion has included both Tom's code and his code with conflict markers.
+
+]$ cat README
+<<<<<<< .min
+* File list
+
+1) array.c	Implementation of array operation.
+2) README	Instructions for user.
+=======
+* Supported operations:
+
+1) Accept input
+2) Display array elements
+>>>>>>> .r7
+Jerry wants Tom's changes as well as his, so he just removes the lines containing the conflict markers.
+
+So, the modified README will look like this.
+
+]$ cat README
+* File list
+
+1) array.c	Implementation of array operation.
+2) README	Instructions for user.
+
+* Supported operations:
+
+1) Accept input
+2) Display array elements
+Jerry resolved the conflict and he retries commit.
+
+]$ svn commit -m "Updated README"
+svn: Commit failed (details follow):
+svn: Aborting commit: '/home/jerry/project_repo/trunk/README' remains in conflict
+ 
+]$ svn status
+?       README.r6
+?       README.r7
+?       README.mine
+C       README
+
+Step 3: Resolve Conflicts
+In the above commit, the letter C indicates that there is a conflict in the README file. 
+Jerry resolved the conflict but didn't tell Subversion that he had resolved the conflict. 
+He uses the resolve command to inform Subversion about the conflict resolution.
+
+]$ svn resolve --accept=working README
+Resolved conflicted state of 'README'
+
+]$ svn status
+M       README
+
+]$ svn commit -m "Updated README"
+Sending        trunk/README
+Transmitting file data .
+Committed revision 8.
+
+----------------------------------------------------------------------
+SVN Revert Option
+
+--First we take latest revision
+]$ svn up 
+
+suppose at revision 22 is latest.
+
+--Now Reverse Merging
+]$ svn merge -r 22:21 myfile.java 
+
+--- Reverse-merging r22 into myfile.java:
+
+]$ svn commit -m "Reverted to revision 21"
+Sending        trunk/array.c
+Transmitting file data .
+Committed revision 23.
